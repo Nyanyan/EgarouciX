@@ -19,34 +19,16 @@ constexpr int cell_div4[HW2] = {
     4, 4, 4, 8, 8, 8
 };
 
-unsigned long long hash_rand_black[4][65536];
-unsigned long long hash_rand_white[4][65536];
+uint64_t hash_rand_black[4][65536];
+uint64_t hash_rand_white[4][65536];
 
 #if MOBILITY_CALC_MODE == 0
-    inline unsigned long long get_mobility(const unsigned long long P, const unsigned long long O){
-        unsigned long long moves, mO, flip1, pre1, flip8, pre8;
-        __m128i	PP, mOO, MM, flip, pre;
-        mO = O & 0x7e7e7e7e7e7e7e7eULL;
-        PP  = _mm_set_epi64x(mirror_v(P), P);
-        mOO = _mm_set_epi64x(mirror_v(mO), mO);
-        flip = _mm_and_si128(mOO, _mm_slli_epi64(PP, 7));				            flip1  = mO & (P << 1);		    flip8  = O & (P << 8);
-        flip = _mm_or_si128(flip, _mm_and_si128(mOO, _mm_slli_epi64(flip, 7)));		flip1 |= mO & (flip1 << 1);	    flip8 |= O & (flip8 << 8);
-        pre  = _mm_and_si128(mOO, _mm_slli_epi64(mOO, 7));				            pre1   = mO & (mO << 1);	    pre8   = O & (O << 8);
-        flip = _mm_or_si128(flip, _mm_and_si128(pre, _mm_slli_epi64(flip, 14)));	flip1 |= pre1 & (flip1 << 2);	flip8 |= pre8 & (flip8 << 16);
-        flip = _mm_or_si128(flip, _mm_and_si128(pre, _mm_slli_epi64(flip, 14)));	flip1 |= pre1 & (flip1 << 2);	flip8 |= pre8 & (flip8 << 16);
-        MM = _mm_slli_epi64(flip, 7);							                    moves = flip1 << 1;		        moves |= flip8 << 8;
-        flip = _mm_and_si128(mOO, _mm_slli_epi64(PP, 9));				            flip1  = mO & (P >> 1);		    flip8  = O & (P >> 8);
-        flip = _mm_or_si128(flip, _mm_and_si128(mOO, _mm_slli_epi64(flip, 9)));		flip1 |= mO & (flip1 >> 1);	    flip8 |= O & (flip8 >> 8);
-        pre = _mm_and_si128(mOO, _mm_slli_epi64(mOO, 9));				            pre1 >>= 1;			            pre8 >>= 8;
-        flip = _mm_or_si128(flip, _mm_and_si128(pre, _mm_slli_epi64(flip, 18)));	flip1 |= pre1 & (flip1 >> 2);	flip8 |= pre8 & (flip8 >> 16);
-        flip = _mm_or_si128(flip, _mm_and_si128(pre, _mm_slli_epi64(flip, 18)));	flip1 |= pre1 & (flip1 >> 2);	flip8 |= pre8 & (flip8 >> 16);
-        MM = _mm_or_si128(MM, _mm_slli_epi64(flip, 9));					            moves |= flip1 >> 1;		    moves |= flip8 >> 8;
-        moves |= _mm_cvtsi128_si64(MM) | mirror_v(_mm_cvtsi128_si64(_mm_unpackhi_epi64(MM, MM)));
-        return moves & ~(P|O);
+    inline uint64_t get_mobility(const uint64_t p, const uint64_t o){
+        
     }
 #elif MOBILITY_CALC_MODE == 1
-    inline unsigned long long get_mobility(const unsigned long long P, const unsigned long long O){
-        unsigned long long res, pp, oo;
+    inline uint64_t get_mobility(const uint64_t P, const uint64_t O){
+        uint64_t res, pp, oo;
         res = ((P << 1) + O) & 0b1111111011111110111111101111111011111110111111101111111011111110ULL;
         pp = mirror_v(P);
         oo = mirror_v(O);
@@ -59,7 +41,7 @@ unsigned long long hash_rand_white[4][65536];
         oo = mirror_v(oo);
         res |= white_line(mirror_v((pp << 1) + oo)) & 0b0000000011111111111111111111111111111111111111111111111111111111ULL;
         */
-        unsigned long long mO, flip8, pre8;
+        uint64_t mO, flip8, pre8;
         __m128i	PP, mOO, MM, flip, pre;
         mO = O & 0x7e7e7e7e7e7e7e7eULL;
         PP  = _mm_set_epi64x(mirror_v(P), P);
@@ -84,8 +66,8 @@ unsigned long long hash_rand_white[4][65536];
 
 class Board {
     public:
-        unsigned long long b;
-        unsigned long long w;
+        uint64_t b;
+        uint64_t w;
         int p;
         int policy;
         int v;
@@ -119,7 +101,7 @@ class Board {
             res->parity = parity;
         }
 
-        inline unsigned long long hash(){
+        inline uint64_t hash(){
             return p ^ 
                 hash_rand_black[0][0b1111111111111111 & b] ^ 
                 hash_rand_black[1][0b1111111111111111 & (b >> 16)] ^ 
@@ -148,7 +130,7 @@ class Board {
                 ((w >> 56) * P196);
             */
             /*
-            unsigned long long res = 0;
+            uint64_t res = 0;
             for (int i = 0; i < HW2; ++i){
                 if (1 & (b >> i))
                     res ^= hash_rand[0][i];
@@ -159,7 +141,7 @@ class Board {
             */
         }
 
-        inline unsigned long long hash_player(){
+        inline uint64_t hash_player(){
             if (p == BLACK)
                 return hash();
             return 
@@ -224,8 +206,8 @@ class Board {
             }
         }
 
-        inline unsigned long long mobility_ull(){
-            unsigned long long res;
+        inline uint64_t mobility_ull(){
+            uint64_t res;
             if (p == BLACK)
                 res = get_mobility(b, w);
             else
@@ -233,8 +215,8 @@ class Board {
             return res;
         }
 
-        inline void full_stability(unsigned long long *h, unsigned long long *v, unsigned long long *d7, unsigned long long *d9){
-            const unsigned long long stones = (b | w);
+        inline void full_stability(uint64_t *h, uint64_t *v, uint64_t *d7, uint64_t *d9){
+            const uint64_t stones = (b | w);
             *h = full_stability_h(stones);
             *v = full_stability_v(stones);
             full_stability_d(stones, d7, d9);
@@ -325,7 +307,7 @@ class Board {
             policy = -1;
         }
 
-        inline void translate_from_ull(const unsigned long long bk, const unsigned long long wt, int player) {
+        inline void translate_from_ull(const uint64_t bk, const uint64_t wt, int player) {
             if (bk & wt)
                 cerr << "both on same square" << endl;
             b = bk;
@@ -374,7 +356,7 @@ class Board {
             return pop_count_ull(w);
         }
 
-        inline void board_canput(int canput_arr[], const unsigned long long mobility_BLACK, const unsigned long long mobility_WHITE){
+        inline void board_canput(int canput_arr[], const uint64_t mobility_BLACK, const uint64_t mobility_WHITE){
             for (int i = 0; i < HW2; ++i){
                 canput_arr[i] = 0;
                 if (1 & (mobility_BLACK >> i))
@@ -385,8 +367,8 @@ class Board {
         }
 
         inline void board_canput(int canput_arr[]){
-            const unsigned long long mobility_BLACK = get_mobility(b, w);
-            const unsigned long long mobility_WHITE = get_mobility(w, b);
+            const uint64_t mobility_BLACK = get_mobility(b, w);
+            const uint64_t mobility_WHITE = get_mobility(w, b);
             board_canput(canput_arr, mobility_BLACK, mobility_WHITE);
         }
 
@@ -419,27 +401,27 @@ class Board {
         }
     
     private:
-        inline unsigned long long full_stability_h(unsigned long long full){
+        inline uint64_t full_stability_h(uint64_t full){
             full &= full >> 1;
             full &= full >> 2;
             full &= full >> 4;
             return (full & 0x0101010101010101) * 0xff;
         }
 
-        inline unsigned long long full_stability_v(unsigned long long full){
+        inline uint64_t full_stability_v(uint64_t full){
             full &= (full >> 8) | (full << 56);
             full &= (full >> 16) | (full << 48);
             full &= (full >> 32) | (full << 32);
             return full;
         }
 
-        inline void full_stability_d(unsigned long long full, unsigned long long *full_d7, unsigned long long *full_d9){
-            static const unsigned long long edge = 0xff818181818181ff;
-            static const unsigned long long e7[] = {
+        inline void full_stability_d(uint64_t full, uint64_t *full_d7, uint64_t *full_d9){
+            static const uint64_t edge = 0xff818181818181ff;
+            static const uint64_t e7[] = {
                 0xffff030303030303, 0xc0c0c0c0c0c0ffff, 0xffffffff0f0f0f0f, 0xf0f0f0f0ffffffff };
-            static const unsigned long long e9[] = {
+            static const uint64_t e9[] = {
                 0xffffc0c0c0c0c0c0, 0x030303030303ffff, 0x0f0f0f0ff0f0f0f0 };
-            unsigned long long l7, r7, l9, r9;
+            uint64_t l7, r7, l9, r9;
             l7 = r7 = full;
             l7 &= edge | (l7 >> 7);		r7 &= edge | (r7 << 7);
             l7 &= e7[0] | (l7 >> 14);	r7 &= e7[1] | (r7 << 14);
