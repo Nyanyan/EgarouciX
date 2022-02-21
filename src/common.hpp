@@ -14,18 +14,18 @@ using namespace std;
 #define N_PHASES 15
 #define PHASE_N_STONES 4
 
-#define HW 8
-#define HW_M1 7
-#define HW_P1 9
-#define HW2 64
-#define HW22 128
-#define HW2_M1 63
-#define HW2_MHW 56
-#define HW2_P1 65
+#define HW 6
+#define HW_M1 5
+#define HW_P1 7
+#define HW2 36
+#define HW22 72
+#define HW2_M1 35
+#define HW2_MHW 30
+#define HW2_P1 37
 #define BLACK 0
 #define WHITE 1
 #define VACANT 2
-#define N_8BIT 256
+#define N_6BIT 64
 
 inline long long tim(){
     return chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count();

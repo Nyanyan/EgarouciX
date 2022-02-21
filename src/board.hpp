@@ -5,19 +5,18 @@
 #else
     #include <x86intrin.h>
 #endif
+#include "common.hpp"
 #include "mobility.hpp"
 
 using namespace std;
 
 constexpr int cell_div4[HW2] = {
-    1, 1, 1, 1, 2, 2, 2, 2, 
-    1, 1, 1, 1, 2, 2, 2, 2, 
-    1, 1, 1, 1, 2, 2, 2, 2, 
-    1, 1, 1, 1, 2, 2, 2, 2, 
-    4, 4, 4, 4, 8, 8, 8, 8, 
-    4, 4, 4, 4, 8, 8, 8, 8, 
-    4, 4, 4, 4, 8, 8, 8, 8, 
-    4, 4, 4, 4, 8, 8, 8, 8
+    1, 1, 1, 2, 2, 2, 
+    1, 1, 1, 2, 2, 2, 
+    1, 1, 1, 2, 2, 2, 
+    4, 4, 4, 8, 8, 8, 
+    4, 4, 4, 8, 8, 8, 
+    4, 4, 4, 8, 8, 8
 };
 
 unsigned long long hash_rand_black[4][65536];
